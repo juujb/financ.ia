@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { eq, and, desc, asc, gte, lte } from "drizzle-orm";
+import { eq, and, desc, gte, lte } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { transactions, bankAccounts } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth";
