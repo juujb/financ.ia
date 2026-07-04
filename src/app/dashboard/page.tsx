@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDashboardSummary } from "@/app/actions/dashboard";
-import { DollarSign, ArrowUpCircle, ArrowDownCircle, Wallet } from "lucide-react";
+import { ArrowUpCircle, ArrowDownCircle, Wallet } from "lucide-react";
+
 
 export default async function DashboardPage() {
   const summary = await getDashboardSummary();

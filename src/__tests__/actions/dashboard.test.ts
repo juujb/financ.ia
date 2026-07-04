@@ -24,10 +24,10 @@ describe("Dashboard Actions", () => {
     (requireUser as jest.Mock).mockResolvedValue({ id: "user-1" });
     
     // Mock for bank accounts total balance
-    const dbMock = db as any;
-    dbMock.where.mockResolvedValueOnce([{ value: "1000.50" }]); // balance
-    dbMock.where.mockResolvedValueOnce([{ value: "5000.00" }]); // income
-    dbMock.where.mockResolvedValueOnce([{ value: "2500.00" }]); // expense
+    const mockWhere = db.where as jest.Mock;
+    mockWhere.mockResolvedValueOnce([{ value: "1000.50" }]); // balance
+    mockWhere.mockResolvedValueOnce([{ value: "5000.00" }]); // income
+    mockWhere.mockResolvedValueOnce([{ value: "2500.00" }]); // expense
 
     const summary = await getDashboardSummary();
 
