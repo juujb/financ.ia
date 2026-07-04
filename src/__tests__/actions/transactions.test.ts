@@ -2,6 +2,11 @@ import { createTransaction, getTransactions, deleteTransaction } from "@/app/act
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 
+// Valid UUIDs required by Zod v4's strict UUID format validation
+const VALID_ACCOUNT_UUID = "550e8400-e29b-41d4-a716-446655440000";
+const VALID_TX_UUID = "550e8400-e29b-41d4-a716-446655440001";
+const OTHER_ACCOUNT_UUID = "550e8400-e29b-41d4-a716-446655440002";
+
 jest.mock("@/lib/db", () => ({
   db: {
     insert: jest.fn(),
@@ -30,7 +35,7 @@ jest.mock("next/cache", () => ({
 const MOCK_USER = { id: "user-clerk-123" };
 
 const MOCK_ACCOUNT = {
-  id: "uuid-acc-1",
+  id: VALID_ACCOUNT_UUID,
   userId: "user-clerk-123",
   name: "Conta Corrente",
   bank: "Nubank",
@@ -41,9 +46,9 @@ const MOCK_ACCOUNT = {
 };
 
 const MOCK_TRANSACTION = {
-  id: "uuid-tx-1",
+  id: VALID_TX_UUID,
   userId: "user-clerk-123",
-  bankAccountId: "uuid-acc-1",
+  bankAccountId: VALID_ACCOUNT_UUID,
   categoryId: null,
   amount: "150.00",
   date: new Date("2026-07-01"),
@@ -70,7 +75,7 @@ describe("Transaction Actions", () => {
       (db.insert as jest.Mock).mockReturnValue(mockInsert);
 
       const result = await createTransaction({
-        bankAccountId: "uuid-acc-1",
+        bankAccountId: VALID_ACCOUNT_UUID,
         amount: "150.00",
         date: new Date("2026-07-01"),
         description: "Supermercado Extra",
@@ -86,7 +91,7 @@ describe("Transaction Actions", () => {
 
       await expect(
         createTransaction({
-          bankAccountId: "other-user-account",
+          bankAccountId: OTHER_ACCOUNT_UUID,
           amount: "100.00",
           date: new Date(),
           description: "Test",
@@ -100,7 +105,7 @@ describe("Transaction Actions", () => {
 
       await expect(
         createTransaction({
-          bankAccountId: "uuid-acc-1",
+          bankAccountId: VALID_ACCOUNT_UUID,
           amount: "100.00",
           date: new Date(),
           description: "",
@@ -119,7 +124,7 @@ describe("Transaction Actions", () => {
       (db.insert as jest.Mock).mockReturnValue(mockInsert);
 
       const result = await createTransaction({
-        bankAccountId: "uuid-acc-1",
+        bankAccountId: VALID_ACCOUNT_UUID,
         amount: "3000.00",
         date: new Date("2026-07-01"),
         description: "Salário",
@@ -138,7 +143,7 @@ describe("Transaction Actions", () => {
       (db.insert as jest.Mock).mockReturnValue(mockInsert);
 
       await createTransaction({
-        bankAccountId: "uuid-acc-1",
+        bankAccountId: VALID_ACCOUNT_UUID,
         amount: "150.00",
         date: new Date("2026-07-01"),
         description: "Test",
@@ -172,7 +177,7 @@ describe("Transaction Actions", () => {
     it("should filter by bankAccountId when provided", async () => {
       (db.query.transactions.findMany as jest.Mock).mockResolvedValue([MOCK_TRANSACTION]);
 
-      const result = await getTransactions({ bankAccountId: "uuid-acc-1" });
+      const result = await getTransactions({ bankAccountId: VALID_ACCOUNT_UUID });
 
       expect(result).toHaveLength(1);
       expect(db.query.transactions.findMany).toHaveBeenCalled();
@@ -188,9 +193,9 @@ describe("Transaction Actions", () => {
       };
       (db.delete as jest.Mock).mockReturnValue(mockDelete);
 
-      const result = await deleteTransaction("uuid-tx-1");
+      const result = await deleteTransaction(VALID_TX_UUID);
 
-      expect(result.id).toBe("uuid-tx-1");
+      expect(result.id).toBe(VALID_TX_UUID);
     });
 
     it("should throw when transaction to delete is not found", async () => {
@@ -200,7 +205,7 @@ describe("Transaction Actions", () => {
       };
       (db.delete as jest.Mock).mockReturnValue(mockDelete);
 
-      await expect(deleteTransaction("ghost-id")).rejects.toThrow("Transação não encontrada.");
+      await expect(deleteTransaction(VALID_TX_UUID)).rejects.toThrow("Transação não encontrada.");
     });
   });
 });

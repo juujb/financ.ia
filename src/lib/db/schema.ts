@@ -1,6 +1,9 @@
 import { pgTable, text, timestamp, numeric, uuid, pgEnum } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+
 
 export const transactionTypeEnum = pgEnum("transaction_type", ["income", "expense"]);
+export const bankAccountTypeEnum = pgEnum("bank_account_type", ["checking", "savings", "digital_wallet"]);
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(), // Clerk ID
@@ -14,6 +17,8 @@ export const bankAccounts = pgTable("bank_accounts", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
+  bank: text("bank"),
+  type: bankAccountTypeEnum("type").notNull().default("checking"),
   balance: numeric("balance", { precision: 12, scale: 2 }).notNull().default("0"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -39,3 +44,23 @@ export const transactions = pgTable("transactions", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// Drizzle relations for type-safe `with:` queries
+export const bankAccountsRelations = relations(bankAccounts, ({ many }) => ({
+  transactions: many(transactions),
+}));
+
+export const categoriesRelations = relations(categories, ({ many }) => ({
+  transactions: many(transactions),
+}));
+
+export const transactionsRelations = relations(transactions, ({ one }) => ({
+  bankAccount: one(bankAccounts, {
+    fields: [transactions.bankAccountId],
+    references: [bankAccounts.id],
+  }),
+  category: one(categories, {
+    fields: [transactions.categoryId],
+    references: [categories.id],
+  }),
+}));

@@ -20,9 +20,6 @@ export async function createTransaction(data: TransactionInput) {
     throw new Error("Conta bancária inválida ou não encontrada.");
   }
 
-  // TODO: Em um cenário real, você atualizaria o saldo da conta aqui 
-  // usando uma transação do banco de dados (transaction no Postgres).
-  
   const [newTransaction] = await db.insert(transactions).values({
     userId: user.id,
     bankAccountId: parsed.bankAccountId,
@@ -33,7 +30,8 @@ export async function createTransaction(data: TransactionInput) {
     type: parsed.type,
   }).returning();
 
-  revalidatePath("/");
+  revalidatePath("/transacoes");
+  revalidatePath("/dashboard");
   return newTransaction;
 }
 
@@ -62,10 +60,9 @@ export async function getTransactions(filters?: {
     where: and(...conditions),
     orderBy: (t) => [desc(t.date), desc(t.createdAt)],
     with: {
-      // Assuming relations are defined in schema, if not, we omit 'with' or add relations
-      // This will fail typecheck if relations are not exported in schema.
-      // Let's omit `with` for now to avoid typescript errors since we didn't add Drizzle relations() block
-    }
+      bankAccount: true,
+      category: true,
+    },
   });
 }
 
@@ -108,7 +105,8 @@ export async function updateTransaction(id: string, data: TransactionInput) {
 
   if (!updatedTransaction) throw new Error("Transação não encontrada.");
 
-  revalidatePath("/");
+  revalidatePath("/transacoes");
+  revalidatePath("/dashboard");
   return updatedTransaction;
 }
 
@@ -121,6 +119,7 @@ export async function deleteTransaction(id: string) {
 
   if (!deletedTransaction) throw new Error("Transação não encontrada.");
 
-  revalidatePath("/");
+  revalidatePath("/transacoes");
+  revalidatePath("/dashboard");
   return deletedTransaction;
 }

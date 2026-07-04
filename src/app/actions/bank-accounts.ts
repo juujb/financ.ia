@@ -14,10 +14,13 @@ export async function createBankAccount(data: BankAccountInput) {
   const [newAccount] = await db.insert(bankAccounts).values({
     userId: user.id,
     name: parsed.name,
+    bank: parsed.bank,
+    type: parsed.type,
     balance: parsed.balance,
   }).returning();
 
-  revalidatePath("/");
+  revalidatePath("/contas");
+  revalidatePath("/dashboard");
   return newAccount;
 }
 
@@ -48,6 +51,8 @@ export async function updateBankAccount(id: string, data: BankAccountInput) {
   const [updatedAccount] = await db.update(bankAccounts)
     .set({
       name: parsed.name,
+      bank: parsed.bank,
+      type: parsed.type,
       balance: parsed.balance,
       updatedAt: new Date(),
     })
@@ -56,7 +61,8 @@ export async function updateBankAccount(id: string, data: BankAccountInput) {
 
   if (!updatedAccount) throw new Error("Conta bancária não encontrada.");
 
-  revalidatePath("/");
+  revalidatePath("/contas");
+  revalidatePath("/dashboard");
   return updatedAccount;
 }
 
@@ -69,6 +75,7 @@ export async function deleteBankAccount(id: string) {
 
   if (!deletedAccount) throw new Error("Conta bancária não encontrada.");
 
-  revalidatePath("/");
+  revalidatePath("/contas");
+  revalidatePath("/dashboard");
   return deletedAccount;
 }
